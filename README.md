@@ -6,7 +6,7 @@
     pip install vk_api
     pip install psycopg2
 ```
-2. Заполняем переменные в файле config.py --- [Токен пользователя можно получить (https://vkhost.github.io/)]
+2. Заполняем переменные в файле config.py --- [Токен пользователя можно получить (https://vkhost.github.io/), токен сообщества можно получить (https://github.com/netology-code/py-advanced-diplom/blob/new_diplom/group_settings.md)]
 4. Запускаем файл bot.py
 5. Взаимодействие с ботом начинается после нажатия кнопки 'Начать поиск' в чате с сообществом, чей токен (сomm_token) указан в файле config.py
 
