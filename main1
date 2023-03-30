@@ -1,8 +1,8 @@
+from config import user_token, comm_token
 import vk_api
 import requests
 import datetime
 from vk_api.longpoll import VkLongPoll, VkEventType
-from config import user_token, comm_token
 from random import randrange
 from database import select, insert_data_users, insert_data_seen_users
 
@@ -195,7 +195,7 @@ class VKBot:
             self.write_msg(user_id, 'Ошибка получения токена')
 
     def get_photos_id(self, user_id):
-        """ПОЛУЧЕНИЕ ID ФОТОГРАФИЙ С РАНЖИРОВАНИЕМ В ОБРАТНОМ ПОРЯДКЕ"""
+        """ПОЛУЧИТЬ ФОТО ID ПО ПОПУЛЯРНОСТИ"""
         url = 'https://api.vk.com/method/photos.getAll'
         params = {'access_token': user_token,
                   'type': 'album',
@@ -204,79 +204,37 @@ class VKBot:
                   'count': 25,
                   'v': '5.131'}
         resp = requests.get(url, params=params)
-        dict_photos = dict()
         resp_json = resp.json()
         try:
-            dict_1 = resp_json['response']
-            list_1 = dict_1['items']
-            for i in list_1:
-                photo_id = str(i.get('id'))
-                i_likes = i.get('likes')
-                if i_likes.get('count'):
-                    likes = i_likes.get('count')
-                    dict_photos[likes] = photo_id
-            list_of_ids = sorted(dict_photos.items(), reverse=True)
-            return list_of_ids
+            list_1 = resp_json['response']['items']
+            dict_photos = {i.get('likes').get('count'): str(i.get('id')) for i in list_1 if i.get('likes').get('count')}
+            return sorted(dict_photos.items(), reverse=True)
         except KeyError:
             self.write_msg(user_id, 'Ошибка получения токена')
 
-    def get_top_photos(self, user_id, num_photos=3):
-        """ПОЛУЧЕНИЕ 3 ЛУЧШИХ ФОТОГРАФИЙ ПО ЛАЙКАМ"""
-        url = 'https://api.vk.com/method/photos.getAll'
-        params = {
-            'access_token': user_token,
-            'type': 'album',
-            'owner_id': user_id,
-            'extended': 1,
-            'count': 25,
-            'v': '5.131'
-        }
-        resp = requests.get(url, params=params)
-        resp_json = resp.json()
+    def get_photo(self, user_id, num):
+        """ПОЛУЧИТЬ ФОТО ID"""
+        list = self.get_photos_id(user_id)
+        if num <= len(list):
+            return list[num - 1][1]
 
-        try:
-            list_of_photos = resp_json['response']['items']
-            list_of_photos.sort(key=lambda x: x['likes']['count'], reverse=True)
-            top_photos = [photo['id'] for photo in list_of_photos[:num_photos]]
-            return top_photos
-        except KeyError:
-            self.write_msg(user_id, 'Ошибка получения токена')
+    def send_photo(self, user_id, message, offset, num):
+        """ОТПРАВИТЬ ФОТО"""
+        photo_id = self.get_photo(self.person_id(offset), num)
+        if photo_id:
+            self.vk.method('messages.send', {'user_id': user_id,
+                                             'access_token': user_token,
+                                             'message': message,
+                                             'attachment': f'photo{self.person_id(offset)}_{photo_id}',
+                                             'random_id': 0})
 
-    def send_photo(self, user_id, message, offset, photo_id, user_token):
-        """ОТПРАВКА ФОТОГРАФИИ ПО ID"""
-        url = 'https://api.vk.com/method/photos.getById'
-        params = {
-            'access_token': user_token,
-            'photos': f"{offset}_{photo_id}",
-            'v': '5.131'
-        }
-        resp = requests.get(url, params=params)
-        resp_json = resp.json()
-
-        try:
-            photo_info = resp_json['response'][0]
-            photo_url = photo_info['sizes'][-1]['url']
-            attachment = f'photo{photo_info["owner_id"]}_{photo_info["id"]}'
-            self.write_msg(user_id, message, attachment=attachment)
-        except (KeyError, IndexError):
-            self.write_msg(user_id, 'Ошибка получения фотографии')
-
-    def send_top_photos(self, user_id, message, offset, user_token):
-        """ОТПРАВКА ТОП-3 ФОТОГРАФИЙ"""
-        top_photos = self.get_top_photos(self.person_id(offset))
-        for i, photo_id in enumerate(top_photos, start=1):
-            self.send_photo(user_id, f'Фото номер {i}', offset, photo_id, user_token)
-
-    def find_persons(self, user_id, offset, user_token):
+    def find_persons(self, user_id, offset):
         self.write_msg(user_id, self.found_person_info(offset))
         self.person_id(offset)
-        list_of_ids = self.get_photos_id(self.person_id(offset))
-        if list_of_ids:
-            for _, photo_id in list_of_ids[:3]:
-                self.send_photo(user_id, f'Фото с ID {photo_id}', offset, photo_id, user_token)
-        else:
-            self.write_msg(user_id, f'Фотографии не найдены')
-
+        insert_data_seen_users(self.person_id(offset), offset)
+        self.send_photo(user_id, 'Фото 1', offset, 1)
+        self.send_photo(user_id, 'Фото 2', offset, 2)
+        self.send_photo(user_id, 'Фото 3', offset, 3)
     def found_person_info(self, offset):
         """ВЫВОД ИНФОРМАЦИИ О НАЙДЕННОМ ПОЛЬЗОВАТЕЛИ"""
         tuple_person = select(offset)
