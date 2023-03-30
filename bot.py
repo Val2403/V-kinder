@@ -1,6 +1,7 @@
 from keyboard import sender
 from main import *
-
+from database import creating_database
+from config import offset, line
 
 for event in bot.longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW and event.to_me:
@@ -10,7 +11,7 @@ for event in bot.longpoll.listen():
         sender(user_id, msg.lower())
         if request == 'начать поиск':
             creating_database()
-            bot.write_msg(user_id, f'Привет, {bot.name(user_id)}')
+            bot.write_msg(user_id, f'Привет, {bot.get_user_name(user_id)}')
             bot.find_user(user_id)
             bot.write_msg(event.user_id, f'Я нашёл подходящую для тебя пару, жми на кнопку "Вперёд"')
             bot.find_persons(user_id, offset)
