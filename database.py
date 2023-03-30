@@ -1,5 +1,5 @@
 import psycopg2
-from config import *
+from config import host, user, password, db_name
 
 connection = psycopg2.connect(
     host=host,
