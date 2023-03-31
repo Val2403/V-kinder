@@ -186,8 +186,7 @@ class VKBot:
                     first_name = person.get('first_name')
                     last_name = person.get('last_name')
                     vk_id = str(person.get('id'))
-                    vk_link = 'vk.com/id' + str(person.get('id'))
-                    insert_data_users(first_name, last_name, vk_id, vk_link)
+                    insert_data_users(first_name, last_name, vk_id)
                 else:
                     continue
             return f'Поиск завершён'
