@@ -1,11 +1,12 @@
 from keyboard import sender
 from main import bot
 from database import creating_database
-from config import offset, line
 from vk_api.longpoll import VkEventType
 
 class VKBot:
-
+    offset = 0 #сдвиг
+    line = range(0, 1000) # последовательность для перебора найденных пользователей
+    
     while True:
         for event in bot.longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW and event.to_me:
