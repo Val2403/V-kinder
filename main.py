@@ -1,4 +1,4 @@
-from config import user_token, comm_token
+from config import USER_TOKEN, COMM_TOKEN
 import vk_api
 import requests
 import datetime
