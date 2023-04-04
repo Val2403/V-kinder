@@ -112,7 +112,6 @@ class VKBot:
         except KeyError:
             self.write_msg(user_id, 'Ошибка получения токена, введите токен в переменную - user_token')
 
-    # @staticmethod
     def cities(self, user_id, city_name):
         """ПОЛУЧЕНИЕ ID ГОРОДА ПОЛЬЗОВАТЕЛЯ ПО НАЗВАНИЮ"""
         url = url = f'https://api.vk.com/method/database.getCities'
