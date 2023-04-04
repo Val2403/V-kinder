@@ -1,7 +1,7 @@
-user_token = ''# токен пользователя
-comm_token = ''# токен сообщества
+USER_TOKEN = ''# токен пользователя
+COMM_TOKEN = ''# токен сообщества
 
-host = host 
-user = user
-password = password
-db_name = db_name
+HOST = host 
+USER = user
+PASSWORD = password
+DB_NAME = db_name
