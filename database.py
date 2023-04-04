@@ -1,12 +1,7 @@
 import psycopg2
-from config import host, user, password, db_name
+from config import HOST, USER, PASSWORD, DB_NAME
 
-connection = psycopg2.connect(
-    host=host,
-    user=user,
-    password=password,
-    database=db_name
-)
+connection = psycopg2.connect(host=HOST, user=USER, password=PASSWORD, database=DB_NAME)
 
 connection.autocommit = True
 
@@ -38,10 +33,14 @@ def create_table_seen_users():
 def insert_data_users(first_name, last_name, vk_id):
     """ВСТАВКА ДАННЫХ В ТАБЛИЦУ USERS"""
     with connection.cursor() as cursor:
-        cursor.execute(
-            f"""INSERT INTO users (first_name, last_name, vk_id) 
-            VALUES ('{first_name}', '{last_name}', '{vk_id}');"""
-        )
+        try:
+            cursor.execute(
+                f"""INSERT INTO users (first_name, last_name, vk_id) 
+                VALUES ('{first_name}', '{last_name}', '{vk_id}');"""
+            )
+            print(f"[INFO] User with vk_id {vk_id} has been added to the database.")
+        except psycopg2.errors.UniqueViolation:
+            print(f"[INFO] User with vk_id {vk_id} already exists in the database.")
 
 
 def insert_data_seen_users(vk_id, offset):
@@ -72,26 +71,9 @@ def select(offset):
         return cursor.fetchone()
 
 
-def drop_users():
-    """УДАЛЕНИЕ ТАБЛИЦЫ USERS КАСКАДОМ"""
-    with connection.cursor() as cursor:
-        cursor.execute(
-            """DROP TABLE IF EXISTS users CASCADE;"""
-        )
-        print('[INFO] Table USERS was deleted.')
-
-
-def drop_seen_users():
-    """УДАЛЕНИЕ ТАБЛИЦЫ SEEN_USERS КАСКАДОМ"""
-    with connection.cursor() as cursor:
-        cursor.execute(
-            """DROP TABLE  IF EXISTS seen_users CASCADE;"""
-        )
-        print('[INFO] Table SEEN_USERS was deleted.')
-
-
 def creating_database():
-    drop_users()
-    drop_seen_users()
     create_table_users()
     create_table_seen_users()
+
+
+creating_database()
