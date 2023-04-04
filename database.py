@@ -24,7 +24,7 @@ def create_table_users():
     print("[INFO] Table USERS was created.")
 
 
-def create_table_seen_users():  # references users(vk_id)
+def create_table_seen_users():
     """СОЗДАНИЕ ТАБЛИЦЫ SEEN_USERS (ПРОСМОТРЕННЫЕ ПОЛЬЗОВАТЕЛИ"""
     with connection.cursor() as cursor:
         cursor.execute(
